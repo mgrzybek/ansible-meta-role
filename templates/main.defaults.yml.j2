@@ -1,0 +1,26 @@
+---
+
+{{ clean_role_name }}_use_docker: false
+{{ clean_role_name }}_docker_image: 
+{{ clean_role_name }}_docker_tag: latest
+{{ clean_role_name }}_docker_env: {}
+{{ clean_role_name }}_docker_published_ports: {}
+{{ clean_role_name }}_docker_volumes: {}
+
+{{ clean_role_name }}_package_state: present
+
+{{ clean_role_name }}_config_consul: false
+{{ clean_role_name }}_consul_services_path: /etc/consul.d
+{{ clean_role_name }}_consul:
+    - service:
+        name: ""
+        tags:
+            - ""
+            - "traefik.enable=false"
+        port: 
+        checks:
+            - args:
+                - "systemctl"
+                - "status"
+                - ""
+              interval: "60s

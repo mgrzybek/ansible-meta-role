@@ -1,0 +1,62 @@
+---
+
+- fail: msg="'name' variable must be given"
+  when: name is not defined or role_name | length == 0
+
+- fail: msg="'path' variable must be given"
+  when: path is not defined or role_name | length == 0
+
+- stat: path={{ path }}
+  register: path_stats
+
+- fail: msg="{{ path }} must exist"
+  when: path_stats.stat.exists == false
+
+- set_fact:
+    full_role_name: "{% if prefix != None %}{{ prefix }}-{% endif %}{{ name }}"
+    clean_role_name: "{{ name | regex_replace('-', '_') }}"
+    ansible_galaxy_options:
+        - "--offline"
+        - "--init-path={{ path }}"
+#        - "--force" # Danger !!!
+
+- name: Lancement d'ansible-galaxy
+  command: ansible-galaxy init {{ ansible_galaxy_options | join(' ') }} {{ path }}/{{ full_role_name }}
+
+- name: Création des fichiers de tâches et notifications
+  template: src={{ item.src }}.yml.j2 dest={{ path }}/{{ full_role_name }}/{{ item.dest }}.yml
+  with_items:
+    - src: tasks/install
+      dest: tasks/{{ name }}_install
+    - src: tasks/pre_install
+      dest: tasks/{{ name }}_pre_install
+    - src: tasks/post_install
+      dest: tasks/{{ name }}_post_install
+    - src: tasks/main
+      dest: tasks/main
+    - src: handlers/main
+      dest: handlers/main
+    - src: main.defaults
+      dest: defaults/main
+
+- name: Création des fichiers de variables par OS
+  template: src=vars/{{ item }}.yml.j2 dest={{ path }}/{{ full_role_name }}/vars/{{ item }}.yml
+  with_items:
+    - debian
+    - redhat
+
+- name: Création du README.md
+  template: src=README.md.j2 dest={{ path }}/{{ full_role_name }}/README.md
+
+- name: Gestion des répertoires et fichiers
+  file: path={{ path }}/{{ full_role_name }}/{{ item.name }} state={{ item.state }}
+  with_items:
+    - name: tests
+      state: absent
+    - name: meta
+      state: absent
+    - name: templates
+      state: directory
+    - name: vars/main.yml
+      state: absent
+ 

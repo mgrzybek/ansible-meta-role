@@ -12,12 +12,12 @@
   notify: reload consul
   when:
     - consul_service.stdout.find('active') > -1
-    - {{ clean_role_name }}_config_consul == true
+    - {{ clean_role_name }}_config_consul | lower == 'true'
 
 - name: Restarts cluster-managed docker
   when:
-    - {{ clean_role_name }}_cluster_aware == true
-    - {{ clean_role_name }}_use_docker == true
+    - {{ clean_role_name }}_cluster_aware | lower == 'true'
+    - {{ clean_role_name }}_use_docker | lower == 'true'
   run_once: true
   block:
     - name: Unmanage {{ clean_role_name }}
@@ -49,8 +49,8 @@
 
 - name: Restarts cluster-managed service
   when:
-    - {{ clean_role_name }}_cluster_aware == true
-    - {{ clean_role_name }}_use_docker == false
+    - {{ clean_role_name }}_cluster_aware | lower == 'true'
+    - {{ clean_role_name }}_use_docker | lower == 'false'
   run_once: true
   block:
     - name: Unmanage {{ clean_role_name }}
@@ -75,8 +75,8 @@
 
 - name: Restarts service
   when:
-    - {{ clean_role_name }}_cluster_aware == false
-    - {{ clean_role_name }}_use_docker == false
+    - {{ clean_role_name }}_cluster_aware | lower == 'false'
+    - {{ clean_role_name }}_use_docker | lower == 'false'
   block:
     - name: Restart {{ clean_role_name }}
       service:
@@ -86,8 +86,8 @@
 
 - name: Restarts docker
   when:
-    - {{ clean_role_name }}_cluster_aware == false
-    - {{ clean_role_name }}_use_docker == true
+    - {{ clean_role_name }}_cluster_aware | lower == 'false'
+    - {{ clean_role_name }}_use_docker | lower == 'true'
   block:
     - name: Start the container
       docker_container:

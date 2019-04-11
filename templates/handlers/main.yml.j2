@@ -1,7 +1,21 @@
 ---
 
-- name: restart 
-  when: {{ clean_role_name }}_post_config_restart_on_change == true
+- name: restart {{ clean_role_name }} service
+  service: name={{ clean_role_name }} state=restarted enabled=yes
+  when:
+    - {{ clean_role_name }}_post_config_restart_on_change == true
+    - {{ clean_role_name }}_cluster_aware == false
+    - {{ clean_role_name }}_use_docker == false
+
+- name: restart {{ clean_role_name }} resource
+  shell: >
+    "{{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource unmanage {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }} && \
+    systemctl restart {{ clean_role_name }}.service && \
+    {{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource manage {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }} && \
+    {{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource enable {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }}"
+  when:
+    - {{ clean_role_name }}_post_config_restart_on_change == true
+    - {{ clean_role_name }}_cluster_aware == true
 
 - name: reload systemd
   shell: systemctl daemon-reload
@@ -10,7 +24,7 @@
   command: firewall-cmd --reload
 
 - name: reload consul
-  command: "'{{' consul_bin '}}' reload"
+  command: "{{ '{{' }} consul_bin {{ '}}' }} reload"
 
 - name: restart telegraf
   service: name=telegraf state=restarted

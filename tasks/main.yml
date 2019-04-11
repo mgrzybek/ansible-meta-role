@@ -48,6 +48,9 @@
 - name: Création du README.md
   template: src=README.md.j2 dest={{ path }}/{{ full_role_name }}/README.md
 
+- name: Création du Makefile
+  copy: src=Makifile dest={{ path }}/{{ full_role_name }}/Makefile
+
 - name: Gestion des répertoires et fichiers
   file: path={{ path }}/{{ full_role_name }}/{{ item.name }} state={{ item.state }}
   with_items:

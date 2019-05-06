@@ -1,6 +1,14 @@
-.PHONY: test # Testing YAML syntax
+AUTOTEST_NAME=ansible-autotest
+AUTOTEST_PATH=/tmp
+
+.PHONY: test # Testing YAML syntax and generating a test playbook
 test:
-	find . -type f -name *.yml | xargs ansible-lint
+	ansible-lint -x ANSIBLE0012 .
+	test/ansible-meta-role -e name=${AUTOTEST_NAME} -e path=${AUTOTEST_PATH}
+
+.PHONY: clean # Deleting the auto-generated testing role
+clean:
+	rm -rf /tmp/ansible-autotest
 
 .PHONY: help # This help message
 help:

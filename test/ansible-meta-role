@@ -1,0 +1,8 @@
+#! /usr/bin/env ansible-playbook
+---
+
+- name: Bootstrap ansible role
+  hosts: localhost
+  gather_facts: no
+  roles:
+      - github/ansible-meta-role

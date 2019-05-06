@@ -1,20 +1,25 @@
 ---
 
-- fail: msg="'name' variable must be given"
+- name: Check 'name' variable
+  fail: msg="'name' variable must be given"
   when: name is not defined or role_name | length == 0
 
-- fail: msg="'path' variable must be given"
+- name: Check 'path' variable
+  fail: msg="'path' variable must be given"
   when: path is not defined or role_name | length == 0
 
-- stat: path={{ path }}
+- name: Check destination directory (1)
+  stat: path={{ path }}
   register: path_stats
 
-- fail: msg="{{ path }} must exist"
-  when: path_stats.stat.exists == false
+- name: Check destination directory (2)
+  fail: msg="{{ path }} must exist"
+  when: path_stats.stat.exists | lower == 'false'
 
-- set_fact:
+- name: Set facts
+  set_fact:
     full_role_name: "{% if prefix != None %}{{ prefix }}-{% endif %}{{ name }}"
-    clean_role_name: "{{ name | regex_replace('-', '_') }}"
+    clean_role_name: "{{ name | regex_replace('-', '_') | regex_replace('ansible_', '') }}"
     ansible_galaxy_options:
         - "--offline"
         - "--init-path={{ path }}"
@@ -27,11 +32,11 @@
   template: src={{ item.src }}.yml.j2 dest={{ path }}/{{ full_role_name }}/{{ item.dest }}.yml
   with_items:
     - src: tasks/install
-      dest: tasks/{{ name }}_install
+      dest: tasks/{{ clean_role_name }}_install
     - src: tasks/pre_install
-      dest: tasks/{{ name }}_pre_install
+      dest: tasks/{{ clean_role_name }}_pre_install
     - src: tasks/post_install
-      dest: tasks/{{ name }}_post_install
+      dest: tasks/{{ clean_role_name }}_post_install
     - src: tasks/main
       dest: tasks/main
     - src: handlers/main
@@ -49,7 +54,7 @@
   template: src=README.md.j2 dest={{ path }}/{{ full_role_name }}/README.md
 
 - name: Création du Makefile
-  copy: src=Makifile dest={{ path }}/{{ full_role_name }}/Makefile
+  copy: src=../Makefile dest={{ path }}/{{ full_role_name }}/Makefile
 
 - name: Gestion des répertoires et fichiers
   file: path={{ path }}/{{ full_role_name }}/{{ item.name }} state={{ item.state }}

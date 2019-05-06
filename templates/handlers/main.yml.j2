@@ -18,7 +18,7 @@
     - {{ clean_role_name }}_cluster_aware == true
 
 - name: reload systemd
-  shell: systemctl daemon-reload
+  systemd: daemon-reload=yes
 
 - name: reload firewalld
   command: firewall-cmd --reload

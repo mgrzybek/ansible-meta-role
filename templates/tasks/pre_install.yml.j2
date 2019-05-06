@@ -9,7 +9,6 @@
     - name: Create apt repo
       get_url: url={{ '{{' }} {{ clean_role_name }}_repo_apt_url {{ '}}' }} dest=/etc/apt/sources.list.d/{{ clean_role_name }}.list
 
-
 - name: RPM-based
   when: ansible_os_family | lower == 'redhat'
   block:
@@ -20,35 +19,32 @@
         baseurl: "{{ '{{' }} {{ clean_role_name }}_repo_rpm_url {{ '}}' }}"
         gpgkey: "{{ '{{' }} {{ clean_role_name }}_repo_key {{ '}}' }}"
 
-- name: Check firewalld
-  shell: systemctl is-active firewalld.service 2>/dev/null || echo ko && exit 0
-  register: firewalld_service
+- name: Check running services
+  service_facts:
 
-- set_fact:
+- name: Set default facts
+  set_fact:
     use_firewalld: false
+    configure_consul: false
 
-- set_fact:
+- name: Set local fact - Configure firewalld
+  when: ansible_facts.services.firewalld is defined
+  set_fact:
     use_firewalld: true
-  when: firewalld_service.stdout.find('active') > -1
 
-- name: Check if consul is running
-  shell: systemctl is-active consul 2>/dev/null || echo ko && exit 0
-  register: consul_service
-
-- name: Create consul_bin variable
-  when: {{ clean_role_name }}_config_consul == true
+- name: Get Consul details
+  when:
+    - {{ clean_role_name }}_config_consul | lower == 'true'
+    - ansible_facts.services.consul is defined
   block:
-    - name: Récupération du path de la commande consul
+    - name: Get Consul path
       shell: systemctl show -p ExecStart consul|tr ' ' '\n'|awk -F= '/path=/ {print $2}'
       register: consul_bin_path
 
-    - set_fact: consul_bin="{{ '{{' }} consul_bin_path.stdout {{ '}}' }}"
-
-- name: Telegraf stuff
-  block:
-    - name: Check telegraf
-      shell: systemctl is-active telegraf 2>/dev/null || echo ko && exit 0
-      register: telegraf_service
+    - name: Set Consul facts
+      set_fact:
+        consul_bin: "{{ '{{' }} consul_bin_path.stdout {{ '}}' }}"
+        configure_consul: true
 
 - name: Cluster-aware facts
   when: {{ clean_role_name }}_cluster_aware == true

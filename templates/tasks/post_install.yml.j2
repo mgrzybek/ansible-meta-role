@@ -14,8 +14,7 @@
   with_items: "{{ '{{' }} {{ clean_role_name }}_consul {{ '}}' }}"
   notify: reload consul
   when:
-    - consul_service.stdout.find('active') > -1
-    - {{ clean_role_name }}_config_consul | lower == 'true'
+    - configure_consul | lower == 'true'
 
 - name: Restarts cluster-managed docker
   when:

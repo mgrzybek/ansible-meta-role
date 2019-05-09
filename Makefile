@@ -5,6 +5,7 @@ AUTOTEST_PATH=/tmp
 test:
 	ansible-lint -x ANSIBLE0012 .
 	test/ansible-meta-role -e name=${AUTOTEST_NAME} -e path=${AUTOTEST_PATH}
+	ansible-lint -x ANSIBLE0012 ${AUTOTEST_PATH}/${AUTOTEST_NAME}
 
 .PHONY: clean # Deleting the auto-generated testing role
 clean:

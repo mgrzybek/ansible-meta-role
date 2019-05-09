@@ -9,65 +9,23 @@
     - restart {{ clean_role_name }} service
     - restart {{ clean_role_name }} resource
 
-- name: Declaration du service dans consul
+- name: Consul service definition
   template: src=service.consul.json.j2 dest={{ '{{' }} {{ clean_role_name }}_consul_services_path {{ '}}' }}/{{ '{{' }} item.service.name {{ '}}' }}.json
   with_items: "{{ '{{' }} {{ clean_role_name }}_consul {{ '}}' }}"
   notify: reload consul
   when:
     - configure_consul | lower == 'true'
 
-- name: Restarts cluster-managed docker
-  when:
-    - {{ clean_role_name }}_cluster_aware | lower == 'true'
-    - {{ clean_role_name }}_use_docker | lower == 'true'
-  run_once: true
-  block:
-    - name: Unmanage {{ clean_role_name }}
-      command: "{{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource unmanage {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }}"
-      when: {{ clean_role_name }}_conf|changed
-      tags: configuration
-
-    - name: Relance de {{ clean_role_name }}
-      when: {{ clean_role_name }}_conf|changed
-      tags: configuration
-      docker_container:
-        name: {{ clean_role_name }}
-        image: "{{ '{{' }} {{ clean_role_name }}_docker_image {{ '}}' }}"
-        tag: "{{ '{{' }} {{ clean_role_name }}_docker_tag {{ '}}' }}"
-        state: started
-        restart: yes
-        devices: "{{ '{{' }} {{ clean_role_name }}_docker_devices {{ '}}' }}"
-        ports: "{{ '{{' }} {{ clean_role_name }}_docker_port_mapping {{ '}}' }}"
-        env: "{{ '{{' }} {{ clean_role_name }}_docker_env {{ '}}' }}"
-
-    - name: Manage {{ clean_role_name }}
-      command: "{{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource manage {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }}"
-      when: {{ clean_role_name }}_conf|changed
-      tags: configuration
-
-    - name: Activation de {{ clean_role_name }}
-      command: "{{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource enable {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }}"
-      tags: configuration
-
-- name: Restarts docker
+- name: (Re)start docker
   when:
     - {{ clean_role_name }}_cluster_aware | lower == 'false'
     - {{ clean_role_name }}_use_docker | lower == 'true'
   block:
     - name: Start the container
       docker_container:
+        state: started
         name: {{ clean_role_name }}-server
         image: "{{ '{{' }} {{ clean_role_name }}_docker_image {{ '}}' }}"
         published_ports: "{{ '{{' }} {{ clean_role_name }}_docker_published_ports {{ '}}' }}"
         volumes: "{{ clean_role_name }}_docker_volumes {{ '}}' }}"
-        env: "{{ '{{' }} {{ clean_role_name }}_docker_env {{ '}}' }}"
-
-    - name: Restart the container
-      when: {{ clean_role_name }}_configuration is changed
-      docker_container:
-        name: {{ clean_role_name }}-server
-        restart: yes
-        image: "{{ '{{' }} {{ clean_role_name }}_docker_image {{ '}}' }}"
-        published_ports: "{{ '{{' }} {{ clean_role_name }}_docker_published_ports {{ '}}' }}"
-        volumes: "{{ '{{' }} {{ clean_role_name }}_docker_volumes {{ '}}' }}"
         env: "{{ '{{' }} {{ clean_role_name }}_docker_env {{ '}}' }}"

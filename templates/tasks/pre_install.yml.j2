@@ -3,8 +3,15 @@
 - name: APT-based
   when: ansible_os_family | lower == 'debian'
   block:
+    - name: Get repo key
+      register: repo_key_result
+      notify: delete repo key file
+      get_url:
+        url: "{{ '{{' }} {{ clean_role_name }}_repo_key_url {{ '}}' }}"
+        dest: /tmp/{{ '{{' }} clean_role_name {{ '}}' }}-repo.key
+
     - name: Installation de la cle de depot
-      shell: curl {{ '{{' }} {{ clean_role_name }}_repo_key_url {{ '}}' }} | apt-key add -
+      command: apt-key add {{ '{{' }} repo_key_result.dest {{ '}}' }}
 
     - name: Create apt repo
       get_url: url={{ '{{' }} {{ clean_role_name }}_repo_apt_url {{ '}}' }} dest=/etc/apt/sources.list.d/{{ clean_role_name }}.list
@@ -37,17 +44,17 @@
     - {{ clean_role_name }}_config_consul | lower == 'true'
     - ansible_facts.services.consul is defined
   block:
-    - name: Get Consul path
-      shell: systemctl show -p ExecStart consul|tr ' ' '\n'|awk -F= '/path=/ {print $2}'
-      register: consul_bin_path
+    - name: Get Consul service details
+      systemd: name=consul
+      register: consul_systemd
 
     - name: Set Consul facts
       set_fact:
-        consul_bin: "{{ '{{' }} consul_bin_path.stdout {{ '}}' }}"
+        consul_bin: "{{ '{{' }} systemd_result.status.ExecStart | regex_replace('^.+path=(.+?){{ '\\' }}s+.+?$','{{ '\\' }}1') {{ '}}' }}"
         configure_consul: true
 
 - name: Cluster-aware facts
-  when: {{ clean_role_name }}_cluster_aware == true
+  when: {{ clean_role_name }}_cluster_aware | lower == 'true'
   block:
     - name: Get crm node name
       command: crm_node -n

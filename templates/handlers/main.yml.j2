@@ -3,9 +3,9 @@
 - name: restart {{ clean_role_name }} service
   service: name={{ clean_role_name }} state=restarted enabled=yes
   when:
-    - {{ clean_role_name }}_post_config_restart_on_change == true
-    - {{ clean_role_name }}_cluster_aware == false
-    - {{ clean_role_name }}_use_docker == false
+    - {{ clean_role_name }}_post_config_restart_on_change | lower == 'true'
+    - {{ clean_role_name }}_cluster_aware | lower == 'false'
+    - {{ clean_role_name }}_use_docker | lower == 'false'
 
 - name: restart {{ clean_role_name }} resource
   shell: >
@@ -14,8 +14,8 @@
     {{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource manage {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }} && \
     {{ '{{' }} {{ clean_role_name }}_cluster_command {{ '}}' }} resource enable {{ '{{' }} {{ clean_role_name }}_cluster_resource_name {{ '}}' }}"
   when:
-    - {{ clean_role_name }}_post_config_restart_on_change == true
-    - {{ clean_role_name }}_cluster_aware == true
+    - {{ clean_role_name }}_post_config_restart_on_change | lower == 'true'
+    - {{ clean_role_name }}_cluster_aware | lower == 'true'
 
 - name: reload systemd
   systemd: daemon-reload=yes
@@ -29,3 +29,5 @@
 - name: restart telegraf
   service: name=telegraf state=restarted
 
+- name: delete repo key file
+  file: path="{{ '{{' }} repo_key_result.dest {{ '}}' }}" state=absent

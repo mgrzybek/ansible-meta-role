@@ -1,5 +1,25 @@
 ---
 
+- name: Set default facts
+  set_fact:
+    use_firewalld: false
+    configure_consul: false
+
+- name: Check running services
+  service_facts:
+
+- name: Check Consul configuration
+  when:
+    - {{ clean_role_name }}_config_consul | lower == 'true'
+    - not ansible_facts.services.consul is defined
+  fail: msg="Consul service not found - Cannot configure it"
+
+- name: Check cluster configuration
+  when:
+    - {{ clean_role_name }}_cluster_aware | lower == 'true'
+    - not ansible_facts.services.pacemaker is defined
+  fail: msg="Pacemaker service not found - Cannot configure it"
+
 - name: APT-based
   when: ansible_os_family | lower == 'debian'
   block:
@@ -26,14 +46,6 @@
         baseurl: "{{ '{{' }} {{ clean_role_name }}_repo_rpm_url {{ '}}' }}"
         gpgkey: "{{ '{{' }} {{ clean_role_name }}_repo_key {{ '}}' }}"
 
-- name: Check running services
-  service_facts:
-
-- name: Set default facts
-  set_fact:
-    use_firewalld: false
-    configure_consul: false
-
 - name: Set local fact - Configure firewalld
   when: ansible_facts.services.firewalld is defined
   set_fact:
@@ -50,7 +62,7 @@
 
     - name: Set Consul facts
       set_fact:
-        consul_bin: "{{ '{{' }} systemd_result.status.ExecStart | regex_replace('^.+path=(.+?){{ '\\' }}s+.+?$','{{ '\\' }}1') {{ '}}' }}"
+        consul_bin: "{{ '{{' }} systemd_result.status.ExecStart | regex_replace('^.+path=(.+?){{ '\\\\' }}s+.+?$','{{ '\\\\' }}1') {{ '}}' }}"
         configure_consul: true
 
 - name: Cluster-aware facts
@@ -58,4 +70,8 @@
   block:
     - name: Get crm node name
       command: crm_node -n
-      register: crm_node_name
+      register: crm_result
+
+    - name: Set cluster facts
+      set_fact:
+        crm_node_name: "{{ '{{' }} crm_result.stdout {{ '}}' }}"

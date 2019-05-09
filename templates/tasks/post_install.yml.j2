@@ -10,11 +10,11 @@
     - restart {{ clean_role_name }} resource
 
 - name: Consul service definition
-  template: src=service.consul.json.j2 dest={{ '{{' }} {{ clean_role_name }}_consul_services_path {{ '}}' }}/{{ '{{' }} item.service.name {{ '}}' }}.json
-  with_items: "{{ '{{' }} {{ clean_role_name }}_consul {{ '}}' }}"
-  notify: reload consul
   when:
     - configure_consul | lower == 'true'
+  notify: reload consul
+  template: src=service.consul.json.j2 dest={{ '{{' }} {{ clean_role_name }}_consul_services_path {{ '}}' }}/{{ '{{' }} item.service.name {{ '}}' }}.json
+  with_items: "{{ '{{' }} {{ clean_role_name }}_consul {{ '}}' }}"
 
 - name: (Re)start docker
   when:

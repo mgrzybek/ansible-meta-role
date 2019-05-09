@@ -17,3 +17,7 @@ help:
 		| sed 's/\.PHONY: \(.*\) # \(.*\)/\1\t\2/' \
 		| expand -t20 \
 		| sort
+
+.PHONY: all # Cleanup and full test
+all: clean test
+

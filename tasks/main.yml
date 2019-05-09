@@ -50,6 +50,9 @@
     - debian
     - redhat
 
+- name: Création du template de service consul
+  copy: src=service.consul.j2 dest=templates/service.consul.j2
+
 - name: Création du README.md
   template: src=README.md.j2 dest={{ path }}/{{ full_role_name }}/README.md
 

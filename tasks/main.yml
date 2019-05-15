@@ -51,7 +51,7 @@
     - redhat
 
 - name: Création du template de service consul
-  copy: src=service.consul.j2 dest={{ path }}/{{ full_role_name }}/templates/service.consul.j2
+  copy: src=service.consul.json.j2 dest={{ path }}/{{ full_role_name }}/templates/service.consul.json.j2
 
 - name: Création du README.md
   template: src=README.md.j2 dest={{ path }}/{{ full_role_name }}/README.md

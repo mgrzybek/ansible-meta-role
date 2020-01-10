@@ -1,6 +1,6 @@
 ---
 
-- name: Install {{ clean_role_name }} packages
+- name: Install | Install {{ clean_role_name }} packages
   when: {{ clean_role_name }}_use_docker | lower == 'false'
   package:
     name: "{{ '{{' }} {{ clean_role_name }}_distro_packages {{ '}}' }}"
@@ -16,7 +16,7 @@
     - install-yum
     - install-zypper
 
-- name: Pull docker image
+- name: Install | Pull docker image
   when: {{ clean_role_name }}_use_docker | lower == 'true'
   docker_image:
     name: "{{ '{{' }} {{ clean_role_name }}_docker_image {{ '}}' }}"

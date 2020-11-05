@@ -52,19 +52,12 @@
   set_fact:
     use_firewalld: true
 
-- name: Pre-Install | Get Consul details
+- name: Pre-Install | Get Consul facts
   when:
     - {{ clean_role_name }}_config_consul | lower == 'true'
     - ansible_facts.services | map('quote') | join(',') | regex_search('consul')
-  block:
-    - name: Pre-Install | Get Consul service details
-      systemd: name=consul
-      register: consul_systemd
-
-    - name: Pre-Install | Set Consul facts
-      set_fact:
-        consul_bin: "{{ '{{' }} consul_systemd.status.ExecStart | regex_replace('^.+path=(.+?){{ '\\\\' }}s+.+?$','{{ '\\\\' }}1') {{ '}}' }}"
-        configure_consul: true
+  set_fact:
+    configure_consul: true
 
 - name: Pre-Install | Cluster-aware facts
   when: {{ clean_role_name }}_cluster_aware | lower == 'true'

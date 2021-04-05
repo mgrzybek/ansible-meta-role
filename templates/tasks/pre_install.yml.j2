@@ -64,6 +64,7 @@
   block:
     - name: Pre-Install | Get crm node name
       command: crm_node -n
+      changed_when: False
       register: crm_result
 
     - name: Pre-Install | Set cluster facts

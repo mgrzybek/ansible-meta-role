@@ -4,7 +4,16 @@
 
 .PHONY: test # Testing YAML syntax and generating a test playbook
 test:
-	ansible-lint -x ANSIBLE0012 .
+	ansible-lint .
+
+.PHONY: vagrant-destroy # Destroy Vagrant environment
+vagrant-destroy:
+	@vagrant destroy -f
+
+.PHONY: vagrant-vbox # Test using Vagrant and Virtualbox
+vagrant-vbox:
+	@vagrant up --provider=virtualbox
+	@vagrant provision
 
 .PHONY: help # This help message
 help:

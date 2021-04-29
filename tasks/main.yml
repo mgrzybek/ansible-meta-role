@@ -59,12 +59,26 @@
 - name: Création du Makefile
   template: src=Makefile.j2 dest={{ path }}/{{ full_role_name }}/Makefile
 
+- name: Création du .gitignore
+  copy: src=../.gitignore dest={{ path }}/{{ full_role_name }}
+
+- name: Création du .pre-commit-config.yaml
+  copy: src=../.pre-commit-config.yaml dest={{ path }}/{{ full_role_name }}
+
+- name: Création du playbook de tests
+  template: src=tests/main.yml.j2 dest={{ path }}/{{ full_role_name }}/tests/main.yml
+
+- name: Création du fichier Vagrant
+  template: src=Vagrantfile.j2 dest={{ path }}/{{ full_role_name }}/Vagrantfile
+
 - name: Gestion des répertoires et fichiers
   file: path={{ path }}/{{ full_role_name }}/{{ item.name }} state={{ item.state }}
   with_items:
-    - name: tests
-      state: absent
     - name: meta
+      state: absent
+    - name: tests/inventory
+      state: absent
+    - name: tests/test.yml
       state: absent
     - name: templates
       state: directory

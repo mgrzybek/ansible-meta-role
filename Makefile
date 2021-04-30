@@ -14,9 +14,9 @@ clean:
 .PHONY: help # This help message
 help:
 	@grep '^.PHONY: .* #' Makefile \
-		| sed 's/\.PHONY: \(.*\) # \(.*\)/\1\t\2/' \
-		| expand -t20 \
-		| sort
+	| awk -F: '/\.PHONY:/ {gsub(".PHONY: ","");gsub("#","\t");print $0}' \
+	| expand -t20 \
+	| sort
 
 .PHONY: all # Cleanup and full test
 all: clean test

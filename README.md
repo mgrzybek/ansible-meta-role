@@ -32,7 +32,7 @@ This is a simple script using the role:
       hosts: localhost
       gather_facts: no
       roles:
-          - ansible-meta-role
+      - role: ansible-meta-role
 
 The command line should be:
 

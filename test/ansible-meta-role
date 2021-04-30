@@ -5,4 +5,4 @@
   hosts: localhost
   gather_facts: no
   roles:
-      - github/ansible-meta-role
+  - role: "{{ lookup('ENV', 'PWD') }}"

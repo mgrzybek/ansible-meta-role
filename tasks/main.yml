@@ -1,28 +1,31 @@
----
-
 - name: Check 'name' variable
-  fail: msg="'name' variable must be given"
-  when: name is not defined or role_name | length == 0
+  assert:
+    fail_msg: "'name' variable must be given"
+    that:
+    - name is defined
 
 - name: Check 'path' variable
-  fail: msg="'path' variable must be given"
-  when: path is not defined or role_name | length == 0
+  assert:
+    fail_msg: "'path' variable must be given"
+    that:
+    - path is defined
 
 - name: Check destination directory (1)
   stat: path={{ path }}
   register: path_stats
 
 - name: Check destination directory (2)
-  fail: msg="{{ path }} must exist"
-  when: path_stats.stat.exists | lower == 'false'
+  assert:
+    fail_msg: '{{ path }} must exist'
+    that: path_stats.stat.exists | lower == 'true'
 
 - name: Set facts
   set_fact:
-    full_role_name: "{% if prefix != None %}{{ prefix }}-{% endif %}{{ name }}"
+    full_role_name: '{% if prefix != None %}{{ prefix }}-{% endif %}{{ name }}'
     clean_role_name: "{{ name | regex_replace('-', '_') | regex_replace('ansible_', '') }}"
     ansible_galaxy_options:
-        - "--offline"
-        - "--init-path={{ path }}"
+    - --offline
+    - --init-path={{ path }}
 #        - "--force" # Danger !!!
 
 - name: Lancement d'ansible-galaxy
@@ -31,24 +34,24 @@
 - name: Création des fichiers de tâches et notifications
   template: src={{ item.src }}.yml.j2 dest={{ path }}/{{ full_role_name }}/{{ item.dest }}.yml
   with_items:
-    - src: tasks/install
-      dest: tasks/{{ clean_role_name }}_install
-    - src: tasks/pre_install
-      dest: tasks/{{ clean_role_name }}_pre_install
-    - src: tasks/post_install
-      dest: tasks/{{ clean_role_name }}_post_install
-    - src: tasks/main
-      dest: tasks/main
-    - src: handlers/main
-      dest: handlers/main
-    - src: main.defaults
-      dest: defaults/main
+  - src: tasks/install
+    dest: tasks/{{ clean_role_name }}_install
+  - src: tasks/pre_install
+    dest: tasks/{{ clean_role_name }}_pre_install
+  - src: tasks/post_install
+    dest: tasks/{{ clean_role_name }}_post_install
+  - src: tasks/main
+    dest: tasks/main
+  - src: handlers/main
+    dest: handlers/main
+  - src: main.defaults
+    dest: defaults/main
 
 - name: Création des fichiers de variables par OS
   template: src=vars/{{ item }}.yml.j2 dest={{ path }}/{{ full_role_name }}/vars/{{ item }}.yml
   with_items:
-    - debian
-    - redhat
+  - debian
+  - redhat
 
 - name: Création du template de service consul
   copy: src=service.consul.json.j2 dest={{ path }}/{{ full_role_name }}/templates/service.consul.json.j2
@@ -74,14 +77,14 @@
 - name: Gestion des répertoires et fichiers
   file: path={{ path }}/{{ full_role_name }}/{{ item.name }} state={{ item.state }}
   with_items:
-    - name: meta
-      state: absent
-    - name: tests/inventory
-      state: absent
-    - name: tests/test.yml
-      state: absent
-    - name: templates
-      state: directory
-    - name: vars/main.yml
-      state: absent
+  - name: meta
+    state: absent
+  - name: tests/inventory
+    state: absent
+  - name: tests/test.yml
+    state: absent
+  - name: templates
+    state: directory
+  - name: vars/main.yml
+    state: absent
 

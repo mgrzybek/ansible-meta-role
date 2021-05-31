@@ -2,7 +2,7 @@ AUTOTEST_NAME=ansible-autotest
 AUTOTEST_PATH=/tmp
 
 .PHONY: test # Testing YAML syntax and generating a test playbook
-test:
+test: clean
 	ansible-lint -x ANSIBLE0012 .
 	test/ansible-meta-role -e name=${AUTOTEST_NAME} -e path=${AUTOTEST_PATH}
 	ansible-lint -x ANSIBLE0012 ${AUTOTEST_PATH}/${AUTOTEST_NAME}

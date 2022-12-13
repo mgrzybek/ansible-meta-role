@@ -9,7 +9,10 @@ packaging.
 
 ## Role Variables
 
-Two variables must exist: \* `name`: role’s name \* `path`: role’s path
+Two variables must exist:
+
+* `name`: role’s name
+* `path`: role’s path
 
 ## Dependencies
 
@@ -19,15 +22,15 @@ This is a standalone role.
 
 This is a simple script using the role:
 
-``` bash
+```yaml
 #! /usr/bin/ansible-playbook
 ---
 
 - name: Bootstrap ansible role
- hosts: localhost
- gather_facts: no
- roles:
- - role: ansible-meta-role
+  hosts: localhost
+  gather_facts: no
+  roles:
+  - role: ansible-meta-role
 ```
 
 The command line should be:
